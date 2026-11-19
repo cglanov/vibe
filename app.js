@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const panels = document.querySelectorAll(".panel");
-  const exportPdfBtn = document.getElementById("exportPdfBtn");
+  const exportTxtBtn = document.getElementById("exportTxtBtn");
   const clearAllBtn = document.getElementById("clearAllBtn");
 
   // Update line counter and support Tab indentation inside textareas
@@ -46,8 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Generate and download the formatted PDF
-  exportPdfBtn.addEventListener("click", () => {
+  // Generate and download the formatted .txt file
+  exportTxtBtn.addEventListener("click", () => {
     const populatedFiles = [];
 
     panels.forEach((panel) => {
@@ -63,133 +63,42 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({
-      orientation: "portrait",
-      unit: "pt",
-      format: "letter",
-    });
-
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const margin = 40;
-    const usableWidth = pageWidth - margin * 2;
-    const lineHeight = 13;
-    const codeFontSize = 9;
-    let cursorY = margin;
-
-    // Document Title Banner
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(15, 23, 42);
-    doc.text("Project Source Code Export", margin, cursorY);
-    cursorY += 16;
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(100, 116, 139);
+    const divider = "=".repeat(70);
+    const subDivider = "-".repeat(70);
     const timestamp = new Date().toLocaleString();
     const fileSummary = populatedFiles.map((f) => f.fileName).join(", ");
-    doc.text(`Generated: ${timestamp}  |  Files: ${fileSummary}`, margin, cursorY);
-    cursorY += 24;
 
-    // Render each populated file block
-    populatedFiles.forEach((file, fileIndex) => {
-      // Ensure enough space for header + at least 3 lines of code
-      if (cursorY + 65 > pageHeight - margin) {
-        doc.addPage();
-        cursorY = margin;
-      } else if (fileIndex > 0) {
-        cursorY += 14;
-      }
+    let output = [];
+    output.push(divider);
+    output.push("PROJECT SOURCE CODE EXPORT");
+    output.push(`Generated: ${timestamp}`);
+    output.push(`Included Files: ${fileSummary}`);
+    output.push(divider);
+    output.push("");
 
-      // Section Header Bar
-      doc.setFillColor(30, 41, 59);
-      doc.roundedRect(margin, cursorY, usableWidth, 24, 3, 3, "F");
+    populatedFiles.forEach((file) => {
+      const normalizedContent = file.content.replace(/\r\n/g, "\n").trimEnd();
+      const lineCount = normalizedContent.split("\n").length;
 
-      doc.setFont("courier", "bold");
-      doc.setFontSize(11);
-      doc.setTextColor(255, 255, 255);
-      doc.text(file.fileName, margin + 10, cursorY + 16);
-
-      const rawLines = file.content.replace(/\r\n/g, "\n").split("\n");
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
-      doc.setTextColor(203, 213, 225);
-      doc.text(
-        `${rawLines.length} lines`,
-        pageWidth - margin - 10,
-        cursorY + 16,
-        { align: "right" }
-      );
-
-      cursorY += 36;
-
-      // Code lines with line numbers and wrapping
-      doc.setFont("courier", "normal");
-      doc.setFontSize(codeFontSize);
-
-      const gutterWidth = 30;
-      const codeMaxWidth = usableWidth - gutterWidth - 8;
-
-      rawLines.forEach((rawLine, idx) => {
-        const lineNum = String(idx + 1).padStart(3, " ");
-        // Replace tabs with 2 spaces so jsPDF renders indentation cleanly
-        const normalizedLine = rawLine.replace(/\t/g, "  ");
-        const wrappedLines = doc.splitTextToSize(
-          normalizedLine.length === 0 ? " " : normalizedLine,
-          codeMaxWidth
-        );
-
-        wrappedLines.forEach((segment, wrapIdx) => {
-          if (cursorY + lineHeight > pageHeight - margin) {
-            doc.addPage();
-            cursorY = margin;
-          }
-
-          // Subtle alternating row shading for readability
-          if (idx % 2 === 1) {
-            doc.setFillColor(248, 250, 252);
-            doc.rect(margin, cursorY - 9, usableWidth, lineHeight, "F");
-          }
-
-          // Print line number only on the first wrapped segment
-          if (wrapIdx === 0) {
-            doc.setTextColor(148, 163, 184);
-            doc.text(lineNum, margin + 4, cursorY);
-          }
-
-          // Print code text
-          doc.setTextColor(15, 23, 42);
-          doc.text(segment, margin + gutterWidth, cursorY);
-
-          cursorY += lineHeight;
-        });
-      });
-
-      // Bottom divider line after each file
-      cursorY += 6;
-      doc.setDrawColor(203, 213, 225);
-      doc.setLineWidth(0.75);
-      doc.line(margin, cursorY, pageWidth - margin, cursorY);
-      cursorY += 10;
+      output.push(divider);
+      output.push(`FILE: ${file.fileName} (${lineCount} ${lineCount === 1 ? "line" : "lines"})`);
+      output.push(subDivider);
+      output.push(normalizedContent);
+      output.push(divider);
+      output.push("");
+      output.push("");
     });
 
-    // Add "Page X of Y" footer to every page
-    const totalPages = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
-      doc.setTextColor(100, 116, 139);
-      doc.text(
-        `Page ${i} of ${totalPages}`,
-        pageWidth / 2,
-        pageHeight - 20,
-        { align: "center" }
-      );
-    }
+    const blob = new Blob([output.join("\n")], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
 
-    doc.save("code-export.pdf");
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "code-export.txt";
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   });
 });
