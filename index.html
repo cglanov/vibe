@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code to PDF Exporter</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <header class="toolbar">
+    <div class="brand">
+      <h1>Code to PDF Exporter</h1>
+      <span class="subtitle">Paste code into any panel below to export a formatted PDF</span>
+    </div>
+    <div class="actions">
+      <button id="clearAllBtn" class="btn btn-secondary">Clear All</button>
+      <button id="exportPdfBtn" class="btn btn-primary">Download PDF</button>
+    </div>
+  </header>
+
+  <main class="panels-grid">
+    <section class="panel" data-file="index.html">
+      <div class="panel-header">
+        <span class="file-badge html">index.html</span>
+        <div class="panel-meta">
+          <span class="line-count">0 lines</span>
+          <button class="clear-btn" title="Clear panel">Clear</button>
+        </div>
+      </div>
+      <textarea placeholder="Paste index.html code here..." spellcheck="false"></textarea>
+    </section>
+
+    <section class="panel" data-file="styles.css">
+      <div class="panel-header">
+        <span class="file-badge css">styles.css</span>
+        <div class="panel-meta">
+          <span class="line-count">0 lines</span>
+          <button class="clear-btn" title="Clear panel">Clear</button>
+        </div>
+      </div>
+      <textarea placeholder="Paste styles.css code here..." spellcheck="false"></textarea>
+    </section>
+
+    <section class="panel" data-file="app.js">
+      <div class="panel-header">
+        <span class="file-badge js">app.js</span>
+        <div class="panel-meta">
+          <span class="line-count">0 lines</span>
+          <button class="clear-btn" title="Clear panel">Clear</button>
+        </div>
+      </div>
+      <textarea placeholder="Paste app.js code here..." spellcheck="false"></textarea>
+    </section>
+
+    <section class="panel" data-file="code.gs">
+      <div class="panel-header">
+        <span class="file-badge gs">code.gs</span>
+        <div class="panel-meta">
+          <span class="line-count">0 lines</span>
+          <button class="clear-btn" title="Clear panel">Clear</button>
+        </div>
+      </div>
+      <textarea placeholder="Paste code.gs code here..." spellcheck="false"></textarea>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
